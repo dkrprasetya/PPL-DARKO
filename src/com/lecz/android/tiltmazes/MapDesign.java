@@ -37,6 +37,9 @@ public class MapDesign {
 	private int mSizeY = 0;
 	private int[][] mWalls;
 	private int[][] mGoals;
+	private int[][] mHoles;
+	private int[][] mSwitches;
+	private int[][] mPortals;
 	private int mInitialPositionX;
 	private int mInitialPositionY;
 	private int mGoalCount = 0;
@@ -77,10 +80,22 @@ public class MapDesign {
 		return mGoals;
 	}
 	
+	public int[][] getHoles(){
+		return mHoles;
+	}
+	
+	public int[][] getPortals(){
+		return mPortals;
+	}
+	
+	public int[][] getSwitches(){
+		return mSwitches;
+	}
+	
 	public int getGoalCount() {
 		return mGoalCount;
 	}
-
+	
 	public int getSizeX() {
 		return mSizeX;
 	}

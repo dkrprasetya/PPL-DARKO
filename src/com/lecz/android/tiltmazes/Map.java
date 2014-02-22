@@ -35,6 +35,9 @@ public class Map {
 	private MapDesign mDesign;
 
 	private int[][] mGoals;
+	private int[][] mHoles;
+	private int[][] mSwitches;
+	private int[][] mPortals;
 	private int mGoalCount;
 
 	public Map(MapDesign design) {
@@ -51,6 +54,27 @@ public class Map {
 				mGoals[y][x] = goals[y][x];
 
 		mGoalCount = mDesign.getGoalCount();
+		
+		if (mHoles == null) mHoles = new int[mDesign.getSizeY()][mDesign.getSizeX()];
+		
+		int[][] holes = mDesign.getHoles();
+		for (int y = 0; y < mDesign.getSizeY(); y++)
+			for (int x = 0; x < mDesign.getSizeX(); x++)
+				mHoles[y][x] = holes[y][x];
+		
+		if (mSwitches == null) mSwitches = new int[mDesign.getSizeY()][mDesign.getSizeX()];
+		
+		int[][] switches = mDesign.getSwitches();
+		for (int y = 0; y < mDesign.getSizeY(); y++)
+			for (int x = 0; x < mDesign.getSizeX(); x++)
+				mSwitches[y][x] = switches[y][x];
+		
+		if (mPortals == null) mPortals = new int[mDesign.getSizeY()][mDesign.getSizeX()];
+		
+		int[][] portals = mDesign.getPortals();
+		for (int y = 0; y < mDesign.getSizeY(); y++)
+			for (int x = 0; x < mDesign.getSizeX(); x++)
+				mPortals[y][x] = portals[y][x];
 	}
 	
 	public String getName() {
@@ -83,6 +107,40 @@ public class Map {
 		mGoals[y][x] = value;
 	}
 
+	public int[][] getHoles()
+	{
+		return mHoles;
+	}
+	
+	public int getHole(int x, int y){
+		return mHoles[y][x];
+	}
+	
+	public void removeHole(int x, int y){
+		mHoles[y][x] = 0;
+	}	
+	
+	public int[][] getSwitches()
+	{
+		return mSwitches;
+	}
+		
+	public int getSwitch(int x, int y){
+		return mSwitches[y][x];
+	}
+	
+	public void removeSwitch(int x, int y){
+		mSwitches[y][x] = 0;
+	}
+	
+	public int[][] getPortals(){
+		return mPortals;
+	}
+	
+	public int getPortal(int x, int y){
+		return mPortals[y][x];
+	}
+	
 	public int getSizeX() {
 		return mDesign.getSizeY();
 	}

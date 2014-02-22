@@ -71,7 +71,10 @@ public class MazeView extends View {
 	private int mMapHeight;
 	private int[][] mWalls;
 	private int[][] mGoals;
-
+	private int[][] mHoles;
+	private int[][] mSwitches;
+	private int[][] mPortals;
+	
 	private Paint paint;
 	private RadialGradient goalGradient = new RadialGradient(
 			0, 0, 1,
@@ -150,6 +153,9 @@ public class MazeView extends View {
 		
 		drawWalls(canvas);
 		drawGoals(canvas);
+		drawHoles(canvas);
+		drawSwitches(canvas);
+		drawPortals(canvas);
 		drawBall(canvas);
 
 		if (DEBUG) {
@@ -283,5 +289,20 @@ public class MazeView extends View {
 				paint
 		);
 		paint.setShader(null);
-	}	
+	}
+	
+	private void drawHoles(Canvas canvas)
+	{		
+		mHoles = mGameEngine.getMap().getHoles();
+	}
+	
+	private void drawSwitches(Canvas canvas)
+	{		
+		mSwitches = mGameEngine.getMap().getSwitches();
+	}
+	
+	private void drawPortals(Canvas canvas)
+	{		
+		mPortals = mGameEngine.getMap().getPortals();
+	}
 }
