@@ -218,6 +218,7 @@ public class Ball {
 		// Check if we have hit a hole
 		if (mMap.getHole(Math.round(mX), Math.round(mY)) > 0){
 			// Game over
+			// Ngatur nya gimana ga ngerti -_-
 		}
 		
 		// Check if we have hit a switch
@@ -230,7 +231,9 @@ public class Ball {
 				for (int x = 0; x < mMap.getSizeX(); x++)
 					if (holes[y][x] == id){
 						mMap.removeHole(x, y);
-					}			
+					}		
+			
+			mMap.removeSwitch(Math.round(mX), Math.round(mY));
 		}
 		
 		// Check if we have hit a portal

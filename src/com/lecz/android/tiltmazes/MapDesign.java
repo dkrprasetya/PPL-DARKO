@@ -48,6 +48,9 @@ public class MapDesign {
 			int sizeX, int sizeY,
 			int[][] walls,
 			int[][] goals,
+			int[][] holes,
+			int[][] switches,
+			int[][] portals,
 			int initialPositionX,
 			int initialPositionY) {
 		mName = name;
@@ -55,6 +58,9 @@ public class MapDesign {
 		mSizeY = sizeY;
 		mWalls = walls;
 		mGoals = goals;
+		mHoles = holes;
+		mSwitches = switches;
+		mPortals = portals;
 		mInitialPositionX = initialPositionX;
 		mInitialPositionY = initialPositionY;
 		for (int y = 0; y < mSizeY; y++) {

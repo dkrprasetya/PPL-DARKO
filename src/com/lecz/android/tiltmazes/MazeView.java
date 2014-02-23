@@ -292,17 +292,39 @@ public class MazeView extends View {
 	}
 	
 	private void drawHoles(Canvas canvas)
-	{		
+	{				
 		mHoles = mGameEngine.getMap().getHoles();
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mHoles[y][x] > 0) {
+			        // GAMBAR hole di x, y
+				}
+			}		
+		}
+		
 	}
 	
 	private void drawSwitches(Canvas canvas)
 	{		
 		mSwitches = mGameEngine.getMap().getSwitches();
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mSwitches[y][x] > 0) {
+			        // GAMBAR switch di x, y
+				}
+			}		
+		}
 	}
 	
 	private void drawPortals(Canvas canvas)
 	{		
 		mPortals = mGameEngine.getMap().getPortals();
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mPortals[y][x] > 0) {
+			        // GAMBAR portal di x, y
+				}
+			}		
+		}
 	}
 }
