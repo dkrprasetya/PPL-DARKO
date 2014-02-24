@@ -34,21 +34,26 @@ package com.lecz.android.tiltmazes;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.R;
-import android.view.View;
+import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Paint.Style;
-import android.graphics.Shader.TileMode;
 import android.graphics.RadialGradient;
+import android.graphics.Shader.TileMode;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.View;
 
 
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class MazeView extends View {
 	private boolean DEBUG = false;
 
@@ -74,12 +79,12 @@ public class MazeView extends View {
 	private int[][] mHoles;
 	private int[][] mSwitches;
 	private int[][] mPortals;
-	
+
 	private Paint paint;
 	private RadialGradient goalGradient = new RadialGradient(
 			0, 0, 1,
-			getResources().getColor(R.color.background_light),
-			getResources().getColor(R.color.background_dark),
+			getResources().getColor(R.color.goal_highlight),
+			getResources().getColor(R.color.goal_shadow),
 			TileMode.MIRROR);
 	private Matrix matrix = new Matrix();
 	private Matrix scaleMatrix = new Matrix();
@@ -90,11 +95,21 @@ public class MazeView extends View {
 	private int mDrawStep = 0;
 	private int mDrawTimeHistorySize = 20;
 	private long[] mDrawTimeHistory = new long[mDrawTimeHistorySize];
+	private Resources res;
 	
+	private Bitmap imageBall = null;
+	private Bitmap newImageBall = null;
+	private Bitmap imageHole = null;
+	private Bitmap newImageHole = null;
+	private Bitmap imagePortal = null;
+	private Bitmap newImagePortal = null;
+	private Bitmap imageSwitch = null;
+	private Bitmap newImageSwitch = null;
 	
 	public MazeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-
+		res = context.getResources();
+		
 		// Set up default Paint values
 		paint = new Paint();
 		paint.setAntiAlias(true);
@@ -117,7 +132,7 @@ public class MazeView extends View {
 			};
 			mTimer = new Timer(true);
 			mTimer.schedule(redrawTask, 0, 1000/*ms*/ / 25);
-		}	
+		}
 	}
 	
 	@Override
@@ -156,6 +171,7 @@ public class MazeView extends View {
 		drawHoles(canvas);
 		drawSwitches(canvas);
 		drawPortals(canvas);
+		
 		drawBall(canvas);
 
 		if (DEBUG) {
@@ -194,7 +210,7 @@ public class MazeView extends View {
 	}
 
 	private void drawWalls(Canvas canvas) {
-		paint.setColor(getResources().getColor(R.color.darker_gray));
+		paint.setColor(getResources().getColor(R.color.wall));
 		paint.setStrokeWidth(WALL_WIDTH);
 		paint.setStrokeCap(Cap.ROUND);
 
@@ -239,6 +255,65 @@ public class MazeView extends View {
 		
 		paint.setShader(null);
 	}
+		
+	private void drawHoles(Canvas canvas) {
+		mHoles = mGameEngine.getMap().getHoles();
+		
+		if (imageHole == null)
+		{
+			imageHole = BitmapFactory.decodeResource(res, R.drawable.hole);
+		}
+		newImageHole = getResizedBitmap(imageHole, mUnit * 1f, mUnit * 1f);
+		
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mHoles[y][x] > 0) {
+					canvas.drawBitmap(newImageHole, mXMin + x * mUnit, mYMin + y * mUnit, paint);
+				}
+			}		
+		}
+		
+		paint.setShader(null);
+	}
+	
+	private void drawSwitches(Canvas canvas) {
+		mSwitches = mGameEngine.getMap().getSwitches();
+		
+		if (imageSwitch == null)
+		{
+			imageSwitch = BitmapFactory.decodeResource(res, R.drawable.switch1);
+		}
+		newImageSwitch = getResizedBitmap(imageSwitch, mUnit * 1f, mUnit * 1f);
+		
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mSwitches[y][x] > 0) {
+					canvas.drawBitmap(newImageSwitch, mXMin + x * mUnit, mYMin + y * mUnit, paint);
+				}
+			}		
+		}
+		
+		paint.setShader(null);
+	}
+	
+	private void drawPortals(Canvas canvas) {
+		mPortals = mGameEngine.getMap().getPortals();
+		
+		if (imagePortal == null) {
+			imagePortal = BitmapFactory.decodeResource(res, R.drawable.blue_portal);
+		}
+		newImagePortal = getResizedBitmap(imagePortal, mUnit * 0.8f, mUnit * 0.8f);
+		
+		for (int y = 0; y < mMapHeight; y++) {
+			for (int x = 0; x < mMapWidth; x++) {
+				if (mPortals[y][x] > 0) {
+					canvas.drawBitmap(newImagePortal, mXMin + x * mUnit, mYMin + y * mUnit, paint);
+				}
+			}		
+		}
+		
+		paint.setShader(null);
+	}
 
 	private void drawGoals(Canvas canvas) {
 		paint.setShader(goalGradient);
@@ -271,60 +346,30 @@ public class MazeView extends View {
 	private void drawBall(Canvas canvas) {
 		mBallX = mBall.getX();
 		mBallY = mBall.getY();
-
-		paint.setShader(new RadialGradient(
-				mXMin + (mBallX + 0.55f) * mUnit,
-				mYMin + (mBallY + 0.55f) * mUnit,
-				mUnit * 0.35f,
-				getResources().getColor(R.color.holo_blue_light),
-				getResources().getColor(R.color.holo_blue_dark),
-				TileMode.MIRROR
-		));
-
-		paint.setStyle(Style.FILL);
-		canvas.drawCircle(
-				mXMin + (mBallX + 0.5f) * mUnit,
-				mYMin + (mBallY + 0.5f) * mUnit,
-				mUnit * 0.4f,
-				paint
-		);
+		
+		if (imageBall == null) {
+			imageBall = BitmapFactory.decodeResource(res, R.drawable.blue_ball);
+		}
+		
+		newImageBall = getResizedBitmap(imageBall, mUnit * 0.8f, mUnit * 0.8f);
+		canvas.drawBitmap(newImageBall, mXMin + (mBallX + 0.1f) * mUnit, mYMin + (mBallY + 0.1f) * mUnit, paint);
 		paint.setShader(null);
 	}
 	
-	private void drawHoles(Canvas canvas)
-	{				
-		mHoles = mGameEngine.getMap().getHoles();
-		for (int y = 0; y < mMapHeight; y++) {
-			for (int x = 0; x < mMapWidth; x++) {
-				if (mHoles[y][x] > 0) {
-			        // GAMBAR hole di x, y
-				}
-			}		
-		}
-		
-	}
+	public Bitmap getResizedBitmap(Bitmap bm, float newHeight, float newWidth) {
+	    int width = bm.getWidth();
+	    int height = bm.getHeight();
+	    float scaleWidth = newWidth / width;
+	    float scaleHeight = newHeight / height;
+	    // CREATE A MATRIX FOR THE MANIPULATION
+	    Matrix matrix = new Matrix();
+	    // RESIZE THE BIT MAP
+	    matrix.postScale(scaleWidth, scaleHeight);
 	
-	private void drawSwitches(Canvas canvas)
-	{		
-		mSwitches = mGameEngine.getMap().getSwitches();
-		for (int y = 0; y < mMapHeight; y++) {
-			for (int x = 0; x < mMapWidth; x++) {
-				if (mSwitches[y][x] > 0) {
-			        // GAMBAR switch di x, y
-				}
-			}		
-		}
+	    // "RECREATE" THE NEW BITMAP
+	    Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+	    return resizedBitmap;
 	}
-	
-	private void drawPortals(Canvas canvas)
-	{		
-		mPortals = mGameEngine.getMap().getPortals();
-		for (int y = 0; y < mMapHeight; y++) {
-			for (int x = 0; x < mMapWidth; x++) {
-				if (mPortals[y][x] > 0) {
-			        // GAMBAR portal di x, y
-				}
-			}		
-		}
-	}
+
+
 }

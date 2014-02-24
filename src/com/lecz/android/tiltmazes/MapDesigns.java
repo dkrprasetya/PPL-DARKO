@@ -4,7 +4,7 @@
  * 
  * Based on the puzzle collection of Andrea Gilbert, http://www.clickmazes.com/
  * Maze designs used with permission.
- * Maze concepts and designs © Andrea Gilbert <andrea@clickmazes.com>.
+ * Maze concepts and designs ï¿½ Andrea Gilbert <andrea@clickmazes.com>.
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -86,13 +86,13 @@ public final class MapDesigns {
 		    },
 		    new int[][] {
 		            {0, 0, 0, 0, 0},
-		            {0, 0, 0, 0, 0},
+		            {0, 0, 1, 0, 0},
 		            {0, 0, 0, 0, 0},
 		            {0, 0, 0, 0, 0},
 		            {0, 0, 0, 0, 0}
 		    },
 		    new int[][] {
-		            {0, 0, 0, 0, 0},
+		            {0, 0, 1, 0, 0},
 		            {0, 0, 0, 0, 0},
 		            {0, 0, 0, 0, 0},
 		            {0, 0, 0, 0, 0},
@@ -145,12 +145,13 @@ public final class MapDesigns {
 	        },
 	        new int[][] {
 	                {0, 0, 0, 0, 0, 0},
+	                {0, 0, 1, 0, 0, 0},
 	                {0, 0, 0, 0, 0, 0},
 	                {0, 0, 0, 0, 0, 0},
-	                {0, 0, 0, 1, 0, 0},
 	                {0, 0, 0, 0, 0, 0},
-	                {0, 0, 0, 0, 0, 0}
+	                {0, 0, 0, 2, 0, 0}
 	        },
+	        
 	        2, 2
 		));
 

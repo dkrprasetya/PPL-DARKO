@@ -43,6 +43,9 @@ import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.widget.TextView;
 
+import android.media.AudioManager;
+import android.media.SoundPool;
+
 
 public class GameEngine {
 	private SensorManager mSensorManager;
@@ -68,6 +71,9 @@ public class GameEngine {
 	private TextView mRemainingGoalsLabel;
 	private TextView mStepsView;
 	private MazeView mMazeView;
+	
+	private SoundPool sounds;
+	private int sBounce;
 	
 	private final AlertDialog mMazeSolvedDialog;
 	private final AlertDialog mAllMazesSolvedDialog;
@@ -115,6 +121,10 @@ public class GameEngine {
 		// Request vibrator service
 		mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
+		// Sound effect
+		sounds = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+		sBounce = sounds.load(context, R.raw.bounce, 1);
+		
 		// Register the sensor listener
 		mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 		mSensorManager.registerListener(mSensorAccelerometer, SensorManager.SENSOR_ACCELEROMETER,
@@ -187,10 +197,12 @@ public class GameEngine {
 					return;
 				
 				case Messages.MSG_REACHED_WALL:
+					sounds.play(sBounce, 1.0f, 1.0f, 0, 0, 1.5f);
 					vibrate(12);
 					return;
 				
 				case Messages.MSG_RESTART:
+					vibrate(12);
 					loadMap(mCurrentMap);
 					return;
 				

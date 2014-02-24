@@ -35,8 +35,10 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.view.ContextMenu;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -47,6 +49,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.ImageButton;;
 
 
 public class TiltMazesActivity extends Activity {
@@ -60,6 +63,7 @@ public class TiltMazesActivity extends Activity {
 	private static final int MENU_SENSOR = 4;
 	private static final int MENU_SELECT_MAZE = 5;
 	private static final int MENU_ABOUT = 6;
+	private ImageButton menu;
 	
 	private static final int REQUEST_SELECT_MAZE = 1;
 	
@@ -82,7 +86,7 @@ public class TiltMazesActivity extends Activity {
         mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "TiltMazes");
          
 		mSelectMazeIntent = new Intent(TiltMazesActivity.this, SelectMazeActivity.class);
-
+		
 		// Build the About Dialog
 		mAboutDialog = new Dialog(TiltMazesActivity.this);
 		mAboutDialog.setCancelable(true);
@@ -102,7 +106,7 @@ public class TiltMazesActivity extends Activity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.game_layout);
-
+		
 		// Show the About Dialog on the first start
 		if (getPreferences(MODE_PRIVATE).getBoolean("firststart", true)) {
 			getPreferences(MODE_PRIVATE).edit().putBoolean("firststart", false).commit();
@@ -163,8 +167,46 @@ public class TiltMazesActivity extends Activity {
 			}
 		});
 		mGestureDetector.setIsLongpressEnabled(false);
+		
+		ImageButton backButton = (ImageButton) findViewById(R.id.back);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	mGameEngine.sendEmptyMessage(Messages.MSG_MAP_PREVIOUS);
+            }
+        });
+        
+        menu = (ImageButton) findViewById(R.id.menu);
+        menu.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                //openOptionsMenu();
+            	registerForContextMenu(menu);
+				openContextMenu(menu);
+			    unregisterForContextMenu(menu);
+            }
+        });
+        
+        ImageButton restartButton = (ImageButton) findViewById(R.id.restart);
+        restartButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	mGameEngine.sendEmptyMessage(Messages.MSG_RESTART);
+            }
+        });
 	}
 
+	@Override
+	public void openOptionsMenu() {
+		Configuration config = getResources().getConfiguration();
+		
+		if ((config.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) > Configuration.SCREENLAYOUT_SIZE_LARGE) {
+			int originalScreenLayout = config.screenLayout;
+			config.screenLayout = Configuration.SCREENLAYOUT_SIZE_LARGE;
+			super.openOptionsMenu();
+			config.screenLayout = originalScreenLayout;
+		} else {
+			super.openOptionsMenu();
+		}
+	}
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		return mGestureDetector.onTouchEvent(event);
@@ -307,4 +349,60 @@ public class TiltMazesActivity extends Activity {
     protected void onDestroy() {
      	super.onDestroy();
     }
+	
+	@Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                            ContextMenu.ContextMenuInfo menuInfo) {
+       switch (v.getId()) {
+          case R.id.menu:
+             createMenu(R.menu.main, menu, "Options Tiltmaze");
+             break;
+          default:
+             super.onCreateContextMenu(menu, v, menuInfo);
+       }
+    }
+   private void createMenu(int menuID, ContextMenu menu,
+                                            String title) {
+      /**
+       * Use a MenuInflater associated with the activity to
+       * inflate the Menu layout
+       */
+      getMenuInflater().inflate(menuID, menu);
+      menu.setHeaderTitle(title);
+   }
+ 
+   @Override
+   public boolean onContextItemSelected(MenuItem item) {
+      switch (item.getItemId()) {
+	      case R.id.menu_restart:
+	      	mGameEngine.sendEmptyMessage(Messages.MSG_RESTART);
+	          return true;
+	          
+	      case R.id.menu_prev:
+	      	mGameEngine.sendEmptyMessage(Messages.MSG_MAP_PREVIOUS);
+	          return true;
+	          
+	      case R.id.menu_next:
+	      	mGameEngine.sendEmptyMessage(Messages.MSG_MAP_NEXT);
+	          return true;
+	          
+	      case R.id.menu_sensor:
+	      	mGameEngine.toggleSensorEnabled();
+	      	item.setIcon(getResources().getDrawable(
+	          		mGameEngine.isSensorEnabled() ? android.R.drawable.button_onoff_indicator_on : android.R.drawable.button_onoff_indicator_off
+	          	));
+	      	getPreferences(MODE_PRIVATE).edit().putBoolean("sensorenabled", mGameEngine.isSensorEnabled()).commit();
+	      	return true;
+	      	
+	      case R.id.menu_select_maze:
+	      	startActivityForResult(mSelectMazeIntent, REQUEST_SELECT_MAZE);
+	      	return true;
+	      	
+	      case R.id.menu_about:
+	      	mAboutDialog.show();
+	      	return true;
+	      }	
+	      
+	      return false;
+      }
 }

@@ -1,3 +1,9 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_restart" android:title="Restart" />
+    <item android:id="@+id/menu_prev" android:title="Prev"/>
+    <item android:id="@+id/menu_next" android:title="Next"/>
+    <item android:id="@+id/menu_sensor" android:title="Sensor"/>
+    <item android:id="@+id/menu_select_maze" android:title="Select Maze"/>
+    <item android:id="@+id/menu_about" android:title="About"/>
 </menu>

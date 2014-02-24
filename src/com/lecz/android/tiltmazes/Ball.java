@@ -40,7 +40,7 @@ public class Ball {
     private GameEngine mEngine;
     private Map mMap;
     private MazeView mMazeView;
-    
+
 	// Current position
 	private float mX = 0;
 	private float mY = 0;
@@ -66,6 +66,8 @@ public class Ball {
 	
 	private boolean mIsRolling = false;
 	private Direction mRollDirection = Direction.NONE;
+	
+	private int mPortalId = 0;
 	
 	public Ball(GameEngine engine, Map map, int init_x, int init_y) {
 		mEngine = engine;
@@ -123,7 +125,7 @@ public class Ball {
 		return true;
 	}
 
-	public synchronized boolean roll(Direction dir) {
+	public synchronized boolean roll(final Direction dir) {
 		// Don't accept another roll command if the ball is already rolling
 		if (mIsRolling) return false;
 
@@ -154,7 +156,7 @@ public class Ball {
 		mT1 = SystemClock.elapsedRealtime();
 		TimerTask simTask = new TimerTask() {
 			public void run() {
-				doStep();
+				doStep(dir);
 			}
 		};
 		mTimer = new Timer(true);
@@ -173,7 +175,7 @@ public class Ball {
 		mMazeView.postInvalidate();
 	}
 	
-	private void doStep() {
+	private void doStep(Direction dir) {
 		// Calculate elapsed time since last step
 		mT2 = SystemClock.elapsedRealtime();
 		float dt = (float)(mT2 - mT1);
@@ -213,31 +215,35 @@ public class Ball {
 		}
 			
     	mX = xNext;
-		mY = yNext;			 
-
+		mY = yNext;	
+		
 		// Check if we have hit a hole
 		if (mMap.getHole(Math.round(mX), Math.round(mY)) > 0){
-			// Game over
-			// Ngatur nya gimana ga ngerti -_-
+			mRollDirection = Direction.NONE;
+			mVX = 0;
+			mVY = 0;
+			mIsRolling = false;
+			mTimer.cancel();
+			
+			mEngine.sendEmptyMessage(Messages.MSG_RESTART);
 		}
 		
 		// Check if we have hit a switch
 		if (mMap.getSwitch(Math.round(mX), Math.round(mY)) > 0){
 			// Map changed
-			int id = mMap.getSwitch(Math.round(mX), Math.round(mY)); 
-			int[][] holes = mMap.getHoles();
+			int id = mMap.getSwitch(Math.round(mX), Math.round(mY));
 			
 			for (int y = 0; y < mMap.getSizeY(); y++)
 				for (int x = 0; x < mMap.getSizeX(); x++)
-					if (holes[y][x] == id){
+					if (mMap.getHole(x, y) == id){
 						mMap.removeHole(x, y);
 					}		
 			
 			mMap.removeSwitch(Math.round(mX), Math.round(mY));
 		}
-		
+				
 		// Check if we have hit a portal
-		if (mMap.getPortal(Math.round(mX), Math.round(mY)) > 0){
+		if (mMap.getPortal(Math.round(mX), Math.round(mY)) > 0 && mMap.getPortal(Math.round(mX), Math.round(mY)) != mPortalId){
 			// Position changed
 			int id = mMap.getPortal(Math.round(mX), Math.round(mY)); 
 			int[][] portals = mMap.getPortals();
@@ -245,30 +251,44 @@ public class Ball {
 			float nextX = mX, nextY = mY;			
 			for (int y = 0; y < mMap.getSizeY(); y++){
 				for (int x = 0; x < mMap.getSizeX(); x++){
-					if (id%2 == 0 && portals[y][x] == id+1){
-						nextX = y;
-						nextY = x;
+					if (id%2 == 0 && portals[y][x] == id-1){
+						nextX = x;
+						nextY = y;
+						
+						mPortalId = id-1;
 					}
-					else if(id%2 == 1 && portals[y][x] == id-1){
-						nextX = y;
-						nextY = x;
+					else if(id%2 == 1 && portals[y][x] == id+1){
+						nextX = x;
+						nextY = y;
+						
+						mPortalId = id+1;
 					}
 				}
 			}
 			
 			mX = nextX;
 			mY = nextY;
-			doStep();
-			return;
-		}
-	
-		 // Check if we have reached a goal
+			
+			mMazeView.postInvalidate();
+			
+			mRollDirection = Direction.NONE;
+			mVX = 0;
+			mVY = 0;
+			mIsRolling = false;
+			mTimer.cancel();
+			
+			roll(dir);
+			return;			
+		}		
+		
+		// Check if we have reached a goal
 		if (mMap.getGoal(Math.round(mX), Math.round(mY)) == 1) {
 			// FIXME(leczbalazs): maybe it's not the Ball's repsonibility to actually remove
 			// the goal from the map
 			mMap.removeGoal(Math.round(mX), Math.round(mY));
 			mEngine.sendEmptyMessage(Messages.MSG_REACHED_GOAL);
-		}		
+		}
+		
 		// Stop rolling if we have reached the target position
 		if (reachedTarget) {
 			mRollDirection = Direction.NONE;
